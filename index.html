@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LINE Alert Web</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            max-width: 600px;
+            padding: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #statusMessage {
+            margin-top: 16px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>ส่ง LINE Alert</h2>
+
+    <label>ข้อความที่ต้องการส่ง:LINE ALERT</label><br />
+    <textarea id="messageInput" rows="4" placeholder="พิมพ์ข้อความที่ต้องการส่ง..."></textarea><br />
+
+    <button id="sendLineButton">กดเพื่อส่งข้อความ LINE</button>
+    <p id="statusMessage"></p>
+
+    <script>
+        document.getElementById('sendLineButton').addEventListener('click', async function () {
+            const statusMessage = document.getElementById('statusMessage');
+            const message = document.getElementById('messageInput').value.trim();
+
+            statusMessage.textContent = 'กำลังส่งข้อความ LINE...';
+            statusMessage.className = '';
+
+            if (!message) {
+                statusMessage.textContent = 'กรุณากรอกข้อความก่อนส่งค่ะ';
+                statusMessage.className = 'error';
+                return;
+            }
+
+            const backendUrl = 'https://line-alert-backend.onrender.com/send';
+
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    statusMessage.textContent = 'ส่งข้อความสำเร็จแล้ว ✅';
+                    statusMessage.className = 'success';
+                } else {
+                    const errorText = await response.text();
+                    statusMessage.textContent = `ส่งไม่สำเร็จ: ${response.status} ${response.statusText} - ${errorText}`;
+                    statusMessage.className = 'error';
+                }
+            } catch (err) {
+                statusMessage.textContent = `เชื่อมต่อไม่ได้: ${err.message}`;
+                statusMessage.className = 'error';
+            }
+        });
+    </script>
+</body>
+
+</html>
